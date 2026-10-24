@@ -65,8 +65,14 @@ class AgentBootstrapTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+    def write_consumer_profile(self) -> None:
+        profile_path = self.memory_dir / "global" / "consumer-profile.md"
+        profile_path.parent.mkdir(parents=True, exist_ok=True)
+        profile_path.write_text("# Consumer Profile\n", encoding="utf-8")
+
     def test_agent_bootstrap_renders_codex_agents_md_from_memory_manifest(self) -> None:
         self.write_memory_items()
+        self.write_consumer_profile()
         (self.temp_dir / "AGENTS.md").write_text("# User Rules\n\nDo not delete this.\n", encoding="utf-8")
 
         result = run_agent_bootstrap(
@@ -143,6 +149,7 @@ class AgentBootstrapTests(unittest.TestCase):
 
     def test_agent_bootstrap_project_filter_keeps_global_and_selected_project(self) -> None:
         self.write_memory_items()
+        self.write_consumer_profile()
 
         result = run_agent_bootstrap(
             product_config_path=self.product_config,
@@ -159,8 +166,27 @@ class AgentBootstrapTests(unittest.TestCase):
         self.assertIn("memory/global/consumer-profile.md", content)
         self.assertNotIn("Do not commit generated memory outputs", content)
 
+    def test_agent_bootstrap_omits_consumer_profile_references_when_file_is_absent(self) -> None:
+        self.write_memory_items()
+
+        result = run_agent_bootstrap(
+            product_config_path=self.product_config,
+            state_dir=self.state_dir,
+            memory_dir=self.memory_dir,
+            audits_dir=self.audits_dir,
+        )
+
+        self.assertTrue(result.report.success, result.report.fatal_error_summary)
+        content = (self.temp_dir / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertIn(
+            "Phrase the opener in the user's style using ./memory/global/user-rules.md.",
+            content,
+        )
+        self.assertNotIn("consumer-profile.md", content)
+
     def test_agent_bootstrap_supports_claude_and_generic_renderers(self) -> None:
         self.write_memory_items()
+        self.write_consumer_profile()
         for renderer, target_name in (
             ("claude_md", "CLAUDE.md"),
             ("generic_bootstrap_md", "MEMORY.md"),
