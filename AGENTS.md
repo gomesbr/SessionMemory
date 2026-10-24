@@ -10,7 +10,7 @@ Generated SessionMemory entry map for Codex. Keep user-written content outside t
 - The first line of the first real reply must explicitly reassure the user that the needed memory is already loaded here.
 - Use this exact first line: `Your workspace memory is already loaded here.`
 - Start new chats with a calm direct opener, but do not mention internal memory artifacts such as consumer-profile, rules files, or page names in the first message.
-- Phrase the opener in the user's style using `./memory/global/user-rules.md` and `./memory/global/consumer-profile.md`.
+- Phrase the opener in the user's style using `./memory/global/user-rules.md`.
 - Ask whether the user wants to continue an existing project or start a new one before loading project-specific work.
 - If the user says work happened in another chat, offer a copy/paste handoff prompt that asks only for the missing newer context.
 - Treat backlog and saved open threads as options only. Never assume the next task or start work until the user chooses a direction.
@@ -19,7 +19,6 @@ Generated SessionMemory entry map for Codex. Keep user-written content outside t
 
 1. Global rules:
    -> `./memory/global/user-rules.md`
-   -> `./memory/global/consumer-profile.md`
    -> `./memory/_meta/consumer_style.json`
    -> `./memory/global/memory-freshness.md`
    -> `./memory/global/memory-health.md`

@@ -182,6 +182,10 @@ def render_codex_agents_md(items: list[dict[str, object]]) -> tuple[str, int]:
 def render_bootstrap_markdown(items: list[dict[str, object]], agent_label: str, *, memory_dir: Path, state_dir: Path, freshness_path: Path) -> tuple[str, int]:
     projects = sorted({str(item.get("project")) for item in items if item.get("project")})
     style_config_path = memory_dir / "_meta" / "consumer_style.json"
+    has_consumer_profile = (memory_dir / "global" / "consumer-profile.md").exists()
+    opener_style_sources = "./memory/global/user-rules.md"
+    if has_consumer_profile:
+        opener_style_sources += " and ./memory/global/consumer-profile.md"
     freshness_summary = bootstrap_freshness_summary(state_dir)
     lines = [
         f"# {BRAIN} Agent Memory Index",
@@ -193,7 +197,7 @@ def render_bootstrap_markdown(items: list[dict[str, object]], agent_label: str, 
         "- The first line of the first real reply must explicitly reassure the user that the needed memory is already loaded here.",
         "- Use this exact first line: `Your workspace memory is already loaded here.`",
         "- Start new chats with a calm direct opener, but do not mention internal memory artifacts such as consumer-profile, rules files, or page names in the first message.",
-        "- Phrase the opener in the user's style using ./memory/global/user-rules.md and ./memory/global/consumer-profile.md.",
+        f"- Phrase the opener in the user's style using {opener_style_sources}.",
         "- The first message must state exactly how old the latest durable workspace memory is using both relative time and absolute time.",
         "- A good first-line pattern is: `Your workspace memory is already loaded here.`",
         "- The next line can say: `Latest durable workspace memory update: about <relative-age> ago (<absolute-time>).`",
@@ -219,7 +223,7 @@ def render_bootstrap_markdown(items: list[dict[str, object]], agent_label: str, 
         "",
         "1. Global rules:",
         "   -> ./memory/global/user-rules.md",
-        "   -> ./memory/global/consumer-profile.md",
+        *(["   -> ./memory/global/consumer-profile.md"] if has_consumer_profile else []),
         f"   -> ./{style_config_path.relative_to(memory_dir.parent).as_posix()}",
         f"   -> ./{freshness_path.relative_to(memory_dir.parent).as_posix()}",
         "   -> ./memory/global/memory-health.md",
@@ -268,7 +272,11 @@ def render_bootstrap_markdown(items: list[dict[str, object]], agent_label: str, 
             "",
             "- Treat these files as source of truth.",
             "- user-rules.md and project rules.md contain directive agent behavior; follow them.",
-        "- consumer-profile.md contains inferred preferences; mirror style and workflow without presenting them as hard rules.",
+            *(
+                ["- consumer-profile.md contains inferred preferences; mirror style and workflow without presenting them as hard rules."]
+                if has_consumer_profile
+                else []
+            ),
             "- project.md and recent.md provide state/context; summarize them, but do not treat them as authorization to act.",
             "- lessons.md contains reusable heuristics; apply them when relevant, but let directives and current user requests win.",
             "- consumer_style.json is a compiled style config; use it to keep bootstrap phrasing and follow-up tone aligned with the user.",
